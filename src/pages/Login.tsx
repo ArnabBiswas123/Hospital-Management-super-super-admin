@@ -79,6 +79,7 @@ export default function Login() {
             }
 
         } catch (error) {
+               setIsLoading(false);
             console.error("Error:", error);
         }
     }
@@ -194,7 +195,7 @@ export default function Login() {
                         <Box width={"100%"} paddingX={8} marginTop={6}>
                             <Button
                                 width={"100%"}
-                                fontFamily="Georgia, serif"
+                                // fontFamily="Georgia, serif"
                                 colorPalette="blue"
                                 type="submit"
                                 loading={isLoading}

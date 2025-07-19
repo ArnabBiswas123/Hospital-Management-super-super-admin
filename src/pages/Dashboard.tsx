@@ -5,12 +5,18 @@ import {
     Flex,
     Image,
     Text,
-    IconButton
+    IconButton,
 } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { GiHamburgerMenu } from "react-icons/gi";
 import { useLocation } from "react-router-dom";
-import { FaUser } from "react-icons/fa";
+import { Tooltip } from "../components/ui/tooltip";
+import { HiOutlineLogout } from "react-icons/hi";
+import HospitalTable from "../components/custom/HospitalTable";
+import { FaHospital } from "react-icons/fa";
+import BranchTable from "../components/custom/BranchTable";
+import AddHospital from "../components/custom/AddHospital";
 export default function Dashboard() {
     type Profile = {
         name: string;
@@ -20,6 +26,8 @@ export default function Dashboard() {
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
     const location = useLocation();
     const { pathname } = location;
+    const { hospitalid } = useParams();
+
     const navigate = useNavigate();
     const fetchprofile = async () => {
         try {
@@ -84,6 +92,22 @@ export default function Dashboard() {
                     >
                         PPLDOC SUPERADMIN DASHBOARD
                     </Text>
+                    <Tooltip content="Logout" showArrow>
+                        <IconButton
+                            onClick={() => {
+                                localStorage.removeItem("token");
+                                navigate("/");
+                            }}
+
+                            bgColor={"transparent"}
+                            _hover={{ bg: "transparent" }}
+                            _focus={{ boxShadow: "none" }}
+                            _active={{ bg: "transparent" }}
+
+                        >
+                            <HiOutlineLogout color="red" />
+                        </IconButton>
+                    </Tooltip>
                 </Flex>
                 <Flex flex="1" mt="55px">
                     <Box
@@ -104,14 +128,12 @@ export default function Dashboard() {
                                 paddingRight={2}
                                 mt={4}
                                 marginLeft={!isSidebarOpen ? 1 : 0}
-                                // mb={!isSidebarOpen ? 1 : 0}
                             >
                                 <IconButton
                                     aria-label="Toggle Sidebar"
                                     bgColor={"white"}
                                     onClick={() => setIsSidebarOpen(!isSidebarOpen)}
                                     size="sm"
-                                    // mt={!isSidebarOpen ? 4 : 0}
                                     color={'black'}
                                     _hover={{ bgColor: "white" }}
                                 >
@@ -123,7 +145,8 @@ export default function Dashboard() {
                             <Box display={"flex"} flexDirection={"column"} height={"85vh"}>
                                 <Box
                                     display={"flex"}
-                                    p={4}
+                                    px={4}
+                                    py={4}
                                     flexDirection={"column"}
                                     gap={4}
                                     flexGrow={1}
@@ -134,13 +157,13 @@ export default function Dashboard() {
                                         px={4}
                                         py={1}
                                         color={
-                                            pathname === "/superadmin"
+                                            pathname === "/superadmin" || (pathname.includes("/superadmin/hospitalbranch") && hospitalid) || pathname.includes("/superadmin/addhospitalbranch")
                                                 ? "white"
                                                 : "black"
                                         }
                                         borderRadius={"lg"}
                                         backgroundColor={
-                                            pathname === "/superadmin" ? "#3B82F6"
+                                            pathname === "/superadmin" || (pathname.includes("/superadmin/hospitalbranch") && hospitalid) || pathname.includes("/superadmin/addhospitalbranch") ? "#3B82F6"
                                                 : ""
                                         }
                                         _hover={{ bg: "#d6e4fc", cursor: "pointer" }}
@@ -151,7 +174,7 @@ export default function Dashboard() {
                                     >
                                         <IconButton
                                             color={
-                                                pathname === "/superadmin"
+                                                pathname === "/superadmin" || pathname.includes("/superadmin/addhospitalbranch") || (pathname.includes("/superadmin/hospitalbranch") && hospitalid)
 
                                                     ? "white"
                                                     : "black"
@@ -161,7 +184,7 @@ export default function Dashboard() {
                                             _focus={{ boxShadow: "none" }}
                                             _active={{ bg: "transparent" }}
                                         >
-                                            <FaUser size="24px" />
+                                            <FaHospital size="24px" />
                                         </IconButton>
 
                                         <Text
@@ -176,6 +199,50 @@ export default function Dashboard() {
                                 </Box>
                             </Box>
                         </>}
+                        {!isSidebarOpen && (
+                            <>
+                                <Box display={"flex"} flexDirection={"column"} height={"85vh"}>
+                                    <Box
+                                        display={"flex"}
+                                        py={4}
+                                        flexDirection={"column"}
+                                        gap={4}
+                                        flexGrow={1}
+                                    >
+                                        <Tooltip content="Hospitals" positioning={{ placement: "right-end" }} showArrow>
+                                            <Box
+                                                display={"flex"}
+                                                alignItems={"center"}
+                                                gap={4}
+                                                px={2}
+                                                py={1}
+                                                width={"100%"}
+                                                backgroundColor={
+                                                    pathname === "/superadmin" || pathname.includes("/superadmin/addhospitalbranch") || (pathname.includes("/superadmin/hospitalbranch") && hospitalid) ? "#3B82F6" : ""
+                                                }
+                                                _hover={{ bg: "#d6e4fc", cursor: "pointer" }}
+
+                                                onClick={() => {
+                                                    navigate("/superadmin");
+                                                }}
+                                            >
+                                                <IconButton
+                                                    color={
+                                                        pathname === "/superadmin" || pathname.includes("/superadmin/addhospitalbranch") || (pathname.includes("/superadmin/hospitalbranch") && hospitalid) ? "white" : "black"
+                                                    }
+                                                    bgColor={"transparent"}
+                                                    _hover={{ bg: "transparent" }}
+                                                    _focus={{ boxShadow: "none" }}
+                                                    _active={{ bg: "transparent" }}
+                                                >
+                                                    <FaHospital size="24px" />
+                                                </IconButton>
+                                            </Box>
+                                        </Tooltip>
+                                    </Box>
+                                </Box>
+                            </>
+                        )}
                     </Box>
                     <Box
                         flex="1"
@@ -186,23 +253,35 @@ export default function Dashboard() {
                         marginLeft={
                             isSidebarOpen ? [0, 0, "250px", "250px"] : [0, 0, "60px", "60px"]
                         }
-                        // sx={
-                        //     {
-                        //         "::-webkit-scrollbar": {
-                        //             display: "none",
-                        //         },
-                        //         msOverflowStyle: "none",
-                        //         scrollbarWidth: "none",
-                        //     }
-                        // }
                     >
-                        <Text>Hare Krishna Har Har Mahadev</Text>
+                        <Text
+                            fontFamily={"Inter, sans-serif"}
+                            fontSize={"lg"}
+                            mx={"auto"}
+                            marginBottom={2}
+                            fontWeight={"bold"}
+                            display={["flex", "flex", "none", "none"]}
+                        >
+                            PPLDOC SUPERADMIN DASHBOARD
+                        </Text>
+
+                        {pathname === "/superadmin" ? (
+                            <HospitalTable></HospitalTable>
+                        ) : (
+                            ""
+                        )}
+                        {pathname.includes("/superadmin/hospitalbranch") && !!hospitalid ? (
+                            <BranchTable></BranchTable>
+                        ) : (
+                            ""
+                        )}
+                        {pathname.includes("/superadmin/addhospitalbranch") ? (
+                            <AddHospital></AddHospital>
+                        ) : (
+                            ""
+                        )}
                     </Box>
                 </Flex>
-
-
-
-
             </Box>}
 
         </>
