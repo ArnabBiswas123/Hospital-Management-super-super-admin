@@ -29,6 +29,7 @@ import { CSVLink } from "react-csv";
 import ViewSuperAdmin from "./ViewSuperAdmin";
 import AddSuperAdmin from "./AddSuperAdmin";
 import EditSuperAdmin from "./EditSuperAdmin";
+import { toaster } from "../ui/toaster";
 import ResetPassword from "./ResetPassword";
 export type superAdmin = {
     userid: string;
@@ -57,8 +58,8 @@ export default function SuperAdminTable({ hospitalId }: { hospitalId: string }) 
     const [fetchAgain, setFetchAgain] = useState(false)
     const [isEditOpen, setIsEditOpen] = useState(false)
     const [editsuperAdminId, setEditsuperadminId] = useState('')
-    const [ispasswordOpen,setIsPassswordOpen]=useState(false)
-    const [passwordid,setPasswordId]=useState('')
+    const [ispasswordOpen, setIsPassswordOpen] = useState(false)
+    const [passwordid, setPasswordId] = useState('')
     const fetchSuperAdmins = async () => {
         try {
             const token = localStorage.getItem("token");
@@ -92,6 +93,9 @@ export default function SuperAdminTable({ hospitalId }: { hospitalId: string }) 
     useEffect(() => {
         fetchSuperAdmins();
     }, [fetchAgain])
+
+
+
     const data = useMemo(() => superadmins, [superadmins]);
     const columns = useMemo<ColumnDef<superAdmin>[]>(
         () => [
@@ -122,7 +126,7 @@ export default function SuperAdminTable({ hospitalId }: { hospitalId: string }) 
             },
             {
                 header: 'Reset Password',
-                cell: ({row}) => {
+                cell: ({ row }) => {
                     return <IconButton
                         aria-label="Edit"
                         bgColor={"white"}
@@ -130,7 +134,7 @@ export default function SuperAdminTable({ hospitalId }: { hospitalId: string }) 
                         _hover={{
                             bgColor: "white",
                         }}
-                    onClick={() => {
+                        onClick={() => {
                             setIsPassswordOpen(true)
                             setPasswordId(row.original.userid)
                         }}
@@ -165,21 +169,95 @@ export default function SuperAdminTable({ hospitalId }: { hospitalId: string }) 
                         <Button
                             colorPalette="red"
                             size="xs"
-                        // onClick={() => handleDisable(row.original.userid)}
+                            onClick={() => handleDisable(row.original.userid)}
                         >
                             Disable
                         </Button> :
                         <Button
                             colorPalette="green"
                             size="xs"
-                        // onClick={() => handleEnable(row.original.userid)}
+                            onClick={() => handleEnable(row.original.userid)}
                         >
                             Enable
                         </Button>
                 },
             },
         ], []);
+    const handleDisable = async (rowId: string) => {
+        const token = localStorage.getItem("token");
+        if (!token) {
+            navigate("/");
+        }
+        const confirmDelete = window.confirm(
+            "Are you sure you want to disable this Hospital?"
+        );
+        if (!confirmDelete) {
+            return; //
+        }
+        try {
+            const response: Response = await fetch(
+                `${import.meta.env.VITE_BACKEND_URL}api/v1/superadmin/disablehospitalsuperadmin/${rowId}`,
+                {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+            const data: { success: boolean; msg?: string } = await response.json();
+            if (data.success === true) {
+                setSuperadmins((prevData) =>
+                    prevData.map((item) =>
+                        item.userid === rowId ? { ...item, isActive: false } : item
+                    ))
+            } 
 
+        } catch (error) {
+            console.log(error);
+        }
+    }
+    const handleEnable = async (rowId: string) => {
+        const token = localStorage.getItem("token");
+        if (!token) {
+            navigate("/");
+        }
+        const confirmDelete = window.confirm(
+            "Are you sure you want to enable this Hospital?"
+        );
+        if (!confirmDelete) {
+            return; //
+        }
+        try {
+            const response: Response = await fetch(
+                `${import.meta.env.VITE_BACKEND_URL}api/v1/superadmin/enablehospitalsuperadmin/${rowId}`,
+                {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+            const data: { success: boolean; msg?: string } = await response.json();
+            if (data.success === true) {
+                setSuperadmins((prevData) =>
+                    prevData.map((item) =>
+                        item.userid === rowId ? { ...item, isActive: true } : item
+                    ))
+            }else {
+                if (data.msg === "Enable fail") {
+                    toaster.create({
+                        title: "Superadmin associated hospital needs to be enabled first to perform this action",
+                        type: "error",
+                        duration: 2500,
+                    });
+                }
+            }
+        } catch (error) {
+            console.log(error)
+        }
+    }
     const [globalFilter, setGlobalFilter] = useState('');
     const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 8 });
 
@@ -196,6 +274,10 @@ export default function SuperAdminTable({ hospitalId }: { hospitalId: string }) 
         getPaginationRowModel: getPaginationRowModel(),
         // initialState: { sorting: [{ id: 'createdAt', desc: true }] },
     });
+
+
+
+
     return (
         <>
             {loading ? (<Center>
@@ -286,7 +368,7 @@ export default function SuperAdminTable({ hospitalId }: { hospitalId: string }) 
             {isviewOpen ? <ViewSuperAdmin isOpen={isviewOpen} onClose={() => { setIsviewOpen(false) }} data={viewDetails}></ViewSuperAdmin> : ''}
             {addOpen ? <AddSuperAdmin isOpen={addOpen} onClose={() => { setAddOpen(false) }} id={hospitalId} setFetchAgain={setFetchAgain} ></AddSuperAdmin> : ''}
             {isEditOpen ? <EditSuperAdmin isOpen={isEditOpen} setSuperAdmins={setSuperadmins} onClose={() => { setIsEditOpen(false) }} id={editsuperAdminId}></EditSuperAdmin> : ''}
-            {ispasswordOpen?<ResetPassword id={passwordid} onClose={() => { setIsPassswordOpen(false) }} isOpen={ispasswordOpen}></ResetPassword>:''}
+            {ispasswordOpen ? <ResetPassword id={passwordid} onClose={() => { setIsPassswordOpen(false) }} isOpen={ispasswordOpen}></ResetPassword> : ''}
         </>
     )
 }
