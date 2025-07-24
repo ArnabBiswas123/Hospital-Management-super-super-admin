@@ -13,6 +13,7 @@ function App() {
         <Route path="/" element={<Login></Login>}></Route>
         <Route path="/superadmin" element={<Dashboard></Dashboard>}></Route>
         <Route path="/superadmin/hospitalbranch/:hospitalid" element={<Dashboard></Dashboard>}></Route>
+        <Route path="/superadmin/hospitalsuperadmins/:hospitalid" element={<Dashboard></Dashboard>}></Route>
         <Route path="/superadmin/addhospitalbranch" element={<Dashboard></Dashboard>}></Route>
       </Routes>
     </>

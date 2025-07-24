@@ -17,6 +17,7 @@ import HospitalTable from "../components/custom/HospitalTable";
 import { FaHospital } from "react-icons/fa";
 import BranchTable from "../components/custom/BranchTable";
 import AddHospital from "../components/custom/AddHospital";
+import SuperAdminTable from "../components/custom/SuperAdminTable";
 export default function Dashboard() {
     type Profile = {
         name: string;
@@ -157,24 +158,24 @@ export default function Dashboard() {
                                         px={4}
                                         py={1}
                                         color={
-                                            pathname === "/superadmin" || (pathname.includes("/superadmin/hospitalbranch") && hospitalid) || pathname.includes("/superadmin/addhospitalbranch")
+                                            pathname === "/superadmin" || (pathname.includes("/superadmin/hospitalbranch") && hospitalid) || pathname.includes("/superadmin/addhospitalbranch") || (pathname.includes("/superadmin/hospitalsuperadmins") && hospitalid)
                                                 ? "white"
                                                 : "black"
                                         }
                                         borderRadius={"lg"}
                                         backgroundColor={
-                                            pathname === "/superadmin" || (pathname.includes("/superadmin/hospitalbranch") && hospitalid) || pathname.includes("/superadmin/addhospitalbranch") ? "#3B82F6"
+                                            pathname === "/superadmin" || (pathname.includes("/superadmin/hospitalbranch") && hospitalid) || pathname.includes("/superadmin/addhospitalbranch") || (pathname.includes("/superadmin/hospitalsuperadmins") && hospitalid) ? "#3B82F6"
                                                 : ""
                                         }
                                         _hover={{ bg: "#d6e4fc", cursor: "pointer" }}
-                                        // onClick={() => {
-                                        //     navigate("/doctor");
-                                        // }}
+                                        onClick={() => {
+                                            navigate("/superadmin");
+                                        }}
                                         width={"100%"}
                                     >
                                         <IconButton
                                             color={
-                                                pathname === "/superadmin" || pathname.includes("/superadmin/addhospitalbranch") || (pathname.includes("/superadmin/hospitalbranch") && hospitalid)
+                                                pathname === "/superadmin" || (pathname.includes("/superadmin/hospitalsuperadmins") && hospitalid) || pathname.includes("/superadmin/addhospitalbranch") || (pathname.includes("/superadmin/hospitalbranch") && hospitalid)
 
                                                     ? "white"
                                                     : "black"
@@ -218,7 +219,7 @@ export default function Dashboard() {
                                                 py={1}
                                                 width={"100%"}
                                                 backgroundColor={
-                                                    pathname === "/superadmin" || pathname.includes("/superadmin/addhospitalbranch") || (pathname.includes("/superadmin/hospitalbranch") && hospitalid) ? "#3B82F6" : ""
+                                                    pathname === "/superadmin" || pathname.includes("/superadmin/addhospitalbranch") || (pathname.includes("/superadmin/hospitalsuperadmins") && hospitalid) || (pathname.includes("/superadmin/hospitalbranch") && hospitalid) ? "#3B82F6" : ""
                                                 }
                                                 _hover={{ bg: "#d6e4fc", cursor: "pointer" }}
 
@@ -228,7 +229,7 @@ export default function Dashboard() {
                                             >
                                                 <IconButton
                                                     color={
-                                                        pathname === "/superadmin" || pathname.includes("/superadmin/addhospitalbranch") || (pathname.includes("/superadmin/hospitalbranch") && hospitalid) ? "white" : "black"
+                                                        pathname === "/superadmin" || pathname.includes("/superadmin/addhospitalbranch") || (pathname.includes("/superadmin/hospitalbranch") && hospitalid) || (pathname.includes("/superadmin/hospitalsuperadmins") && hospitalid) ? "white" : "black"
                                                     }
                                                     bgColor={"transparent"}
                                                     _hover={{ bg: "transparent" }}
@@ -271,7 +272,12 @@ export default function Dashboard() {
                             ""
                         )}
                         {pathname.includes("/superadmin/hospitalbranch") && !!hospitalid ? (
-                            <BranchTable></BranchTable>
+                            <BranchTable hospitalId={hospitalid}></BranchTable>
+                        ) : (
+                            ""
+                        )}
+                        {pathname.includes("/superadmin/hospitalsuperadmins") && !!hospitalid ? (
+                            <SuperAdminTable hospitalId={hospitalid}></SuperAdminTable>
                         ) : (
                             ""
                         )}

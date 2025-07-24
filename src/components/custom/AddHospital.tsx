@@ -28,7 +28,7 @@ export default function AddHospital() {
     email: '',
     branchName: '',
     branchEmail: '',
-    branchPhone: '',
+    branchPhone: '', 
     branchAddress: ''
   };
 
@@ -63,7 +63,7 @@ export default function AddHospital() {
   }
   const onSubmit = async (values: hospitalvalue,
     actions: FormikHelpers<hospitalvalue>) => {
-    console.log("Form submitted!");
+
     try {
       const token = localStorage.getItem('token');
       if (!token) {
@@ -90,6 +90,11 @@ export default function AddHospital() {
       const data: { success: boolean; msg?: string } = await response.json();
       if (data.success) {
         actions.resetForm();
+         toaster.create({
+            title: "Hospital & branch created successfully.",
+            type: "success",
+            duration: 2500,
+          });
         navigate('/superadmin');
       } else {
         if (data.msg === "Hospital with this email already exists.") {

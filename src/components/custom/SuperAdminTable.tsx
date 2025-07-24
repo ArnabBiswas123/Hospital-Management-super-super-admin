@@ -1,4 +1,5 @@
-import { useEffect, useState, useMemo } from "react"
+
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import type { ColumnDef } from "@tanstack/react-table";
 import {
@@ -23,47 +24,50 @@ import {
 import { LuSearch } from "react-icons/lu"
 import { FaEye } from "react-icons/fa";
 import { FaEdit } from "react-icons/fa";
-import { FaExternalLinkAlt } from "react-icons/fa";
 import { FiDownload } from "react-icons/fi";
 import { CSVLink } from "react-csv";
-import EditHospital from "./EditHospital";
-import ViewHospital from "./ViewHospital";
-
-export type Hospital = {
+import ViewSuperAdmin from "./ViewSuperAdmin";
+import AddSuperAdmin from "./AddSuperAdmin";
+import EditSuperAdmin from "./EditSuperAdmin";
+import ResetPassword from "./ResetPassword";
+export type superAdmin = {
     userid: string;
     name: string;
     email: string;
+    phone: string,
     createdAt: string;
     isActive: boolean
 }
 const headers = [
-    { label: "HospitalId", key: "userid" },
+    { label: "Hospital Superadmin Id", key: "userid" },
     { label: "Name", key: "name" },
     { label: "Email", key: "email" },
+    { label: "phone", key: "phone" },
     { label: "isActive", key: "isActive" },
     { label: "Creation Date", key: "createdAt" },
 ];
-
-export default function HospitalTable() {
-    const [hospitals, setHospitals] = useState<Hospital[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [isOpen, setIsOpen] = useState(false)
-    const [viewDetails, setViewDeatils] = useState<Hospital | null>(null)
-    const [isviewOpen, setIsviewOpen] = useState(false)
-    const [searchInput, setSearchInput] = useState('');
-    const [editHospitalId, setEditHospitalId] = useState('')
+export default function SuperAdminTable({ hospitalId }: { hospitalId: string }) {
     const navigate = useNavigate();
-
-    const fetchHospitals = async () => {
+    const [superadmins, setSuperadmins] = useState<superAdmin[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [searchInput, setSearchInput] = useState('')
+    const [viewDetails, setViewDeatils] = useState<superAdmin | null>(null)
+    const [isviewOpen, setIsviewOpen] = useState(false)
+    const [addOpen, setAddOpen] = useState(false)
+    const [fetchAgain, setFetchAgain] = useState(false)
+    const [isEditOpen, setIsEditOpen] = useState(false)
+    const [editsuperAdminId, setEditsuperadminId] = useState('')
+    const [ispasswordOpen,setIsPassswordOpen]=useState(false)
+    const [passwordid,setPasswordId]=useState('')
+    const fetchSuperAdmins = async () => {
         try {
             const token = localStorage.getItem("token");
             if (!token) {
                 navigate("/");
-                return;
             }
             setLoading(true);
             const response: Response = await fetch(
-                `${import.meta.env.VITE_BACKEND_URL}api/v1/superadmin/getallhospitals`,
+                `${import.meta.env.VITE_BACKEND_URL}api/v1/superadmin/getallsuperadminbyhospital/${hospitalId}`,
                 {
                     headers: {
                         Authorization: `Bearer ${token}`,
@@ -71,106 +75,31 @@ export default function HospitalTable() {
                 }
             );
             setLoading(false);
-            const data: { success: boolean; data?: Hospital[]; msg?: string } = await response.json();
+            const data: { success: boolean; data?: superAdmin[]; msg?: string } = await response.json();
             if (data.success) {
-                setHospitals(data.data || []);
+                setSuperadmins(data.data || []);
             } else {
                 localStorage.removeItem("token");
-                navigate("/");
+                navigate("/")
             }
         } catch (error) {
             setLoading(false);
             console.error("Error:", error);
         }
     }
+
+
     useEffect(() => {
-        fetchHospitals()
-    }, [])
-    const handleBranchClick = (hospital: Hospital) => {
-        navigate(`/superadmin/hospitalbranch/${hospital.userid}`);
-    }
-    const handleSuperadminClick = (hospital: Hospital) => {
-        navigate(`/superadmin/hospitalsuperadmins/${hospital.userid}`);
-    }
-    const handleDisable = async (rowId: string) => {
-        const token = localStorage.getItem("token");
-        if (!token) {
-            navigate("/");
-        }
-        const confirmDelete = window.confirm(
-            "Are you sure you want to disable this Hospital?"
-        );
-        if (!confirmDelete) {
-            return; //
-        }
-        try {
-            const response: Response = await fetch(
-                // `https://hospital-management-backend-topaz.vercel.app/api/v1/user/enableadmin/${rowData._id}`,
-                `${import.meta.env.VITE_BACKEND_URL}api/v1/superadmin/disablehospital/${rowId}`,
-                {
-                    method: "PUT",
-                    headers: {
-                        "Content-Type": "application/json",
-                        Authorization: `Bearer ${token}`,
-                    },
-                }
-            );
-            const data: { success: boolean; msg?: string } = await response.json();
-            if (data.success === true) {
-                setHospitals((prevData) =>
-                    prevData.map((item) =>
-                        item.userid === rowId ? { ...item, isActive: false } : item
-                    ))
-            }
-        } catch (error) {
-            console.log(error);
-        }
-    }
-    const handleEnable = async (rowId: string) => {
-        const token = localStorage.getItem("token");
-        if (!token) {
-            navigate("/");
-        }
-        const confirmDelete = window.confirm(
-            "Are you sure you want to enable this Hospital?"
-        );
-        if (!confirmDelete) {
-            return; //
-        }
-        try {
-            const response: Response = await fetch(
-                // `https://hospital-management-backend-topaz.vercel.app/api/v1/user/enableadmin/${rowData._id}`,
-                `${import.meta.env.VITE_BACKEND_URL}api/v1/superadmin/enablehospital/${rowId}`,
-                {
-                    method: "PUT",
-                    headers: {
-                        "Content-Type": "application/json",
-                        Authorization: `Bearer ${token}`,
-                    },
-                }
-            );
-            const data: { success: boolean; msg?: string } = await response.json();
-            if (data.success === true) {
-                setHospitals((prevData) =>
-                    prevData.map((item) =>
-                        item.userid === rowId ? { ...item, isActive: true } : item
-                    ))
-            }
-        } catch (error) {
-            console.log(error);
-        }
-    }
-
-
-
-    const data = useMemo(() => hospitals, [hospitals]);
-    const columns = useMemo<ColumnDef<Hospital>[]>(
+        fetchSuperAdmins();
+    }, [fetchAgain])
+    const data = useMemo(() => superadmins, [superadmins]);
+    const columns = useMemo<ColumnDef<superAdmin>[]>(
         () => [
-            { header: 'Hospital Id', accessorKey: 'userid' },
+            { header: 'Superadmin Id', accessorKey: 'userid' },
             {
                 header: 'Name',
                 accessorKey: 'name',
-                cell: info => <Text title={info.getValue<string>()}>{info.getValue<string>().slice(0, 15)}{info.getValue<string>().length > 20 ? "..." : ''}</Text>,
+                cell: info => <Text title={info.getValue<string>()}>{info.getValue<string>().slice(0, 25)}{info.getValue<string>().length > 25 ? "..." : ''}</Text>,
             },
             {
                 header: 'View',
@@ -192,38 +121,24 @@ export default function HospitalTable() {
                 },
             },
             {
-                header: 'Branches',
-                cell: ({ row }) => {
+                header: 'Reset Password',
+                cell: ({row}) => {
                     return <IconButton
-                        aria-label="Redirect"
+                        aria-label="Edit"
                         bgColor={"white"}
                         color={"#3B82F6"}
                         _hover={{
                             bgColor: "white",
                         }}
-                        onClick={() => handleBranchClick(row.original)}
-                    >
-                        <FaExternalLinkAlt />
-                    </IconButton>
-                },
-            },
-            {
-                header: 'Super Admin',
-                cell: ({ row }) => {
-                    return <IconButton
-                        aria-label="Super admin"
-                        bgColor={"white"}
-                        color={"#3B82F6"}
-                        _hover={{
-                            bgColor: "white",
+                    onClick={() => {
+                            setIsPassswordOpen(true)
+                            setPasswordId(row.original.userid)
                         }}
-                        onClick={() => handleSuperadminClick(row.original)}
                     >
-                        <FaExternalLinkAlt />
+                        <FaEdit />
                     </IconButton>
                 },
             },
-
             {
                 header: 'Edit',
                 cell: ({ row }) => {
@@ -235,8 +150,8 @@ export default function HospitalTable() {
                             bgColor: "white",
                         }}
                         onClick={() => {
-                            setIsOpen(true)
-                            setEditHospitalId(row.original.userid)
+                            setIsEditOpen(true)
+                            setEditsuperadminId(row.original.userid)
                         }}
                     >
                         <FaEdit />
@@ -250,14 +165,14 @@ export default function HospitalTable() {
                         <Button
                             colorPalette="red"
                             size="xs"
-                            onClick={() => handleDisable(row.original.userid)}
+                        // onClick={() => handleDisable(row.original.userid)}
                         >
                             Disable
                         </Button> :
                         <Button
                             colorPalette="green"
                             size="xs"
-                            onClick={() => handleEnable(row.original.userid)}
+                        // onClick={() => handleEnable(row.original.userid)}
                         >
                             Enable
                         </Button>
@@ -281,7 +196,6 @@ export default function HospitalTable() {
         getPaginationRowModel: getPaginationRowModel(),
         // initialState: { sorting: [{ id: 'createdAt', desc: true }] },
     });
-
     return (
         <>
             {loading ? (<Center>
@@ -292,7 +206,7 @@ export default function HospitalTable() {
                     mb={4}
                     flexDirection={["column", "row", "row", "row"]}
                     gap={5}>
-                    <CSVLink data={hospitals} filename="Hospitals.csv" headers={headers}>
+                    <CSVLink data={superadmins} filename={`Superadmins of ${hospitalId}`} headers={headers}>
                         <Button
                             fontFamily="Inter, sans-serif"
                             backgroundColor={"white"}
@@ -310,10 +224,10 @@ export default function HospitalTable() {
                         colorPalette="green"
                         fontFamily="Inter, sans-serif"
                         onClick={() => {
-                            navigate('/superadmin/addhospitalbranch')
+                            setAddOpen(true)
                         }}
                     >
-                        Add Hospital
+                        Add Superadmin
                     </Button>
                 </Box>
                 <Box display={"flex"} flexDirection={"row-reverse"}>
@@ -349,7 +263,6 @@ export default function HospitalTable() {
                                                     : {})}
                                             >
                                                 {flexRender(header.column.columnDef.header, header.getContext())}
-                                                {/* {{ asc: <TriangleUpIcon ml={2} />, desc: <TriangleDownIcon ml={2} /> }[header.column.getIsSorted() as string] ?? null} */}
                                             </Table.ColumnHeader>
                                         ))}
                                     </Table.Row>
@@ -369,12 +282,11 @@ export default function HospitalTable() {
                         </Table.Root>
                     </Table.ScrollArea>
                 </Box>
-
-
-
             </>)}
-            {isOpen ? <EditHospital setHospitals={setHospitals} isOpen={isOpen} id={editHospitalId} onClose={() => { setIsOpen(false) }}></EditHospital> : ''}
-            {isviewOpen ? <ViewHospital isOpen={isviewOpen} onClose={() => { setIsviewOpen(false) }} data={viewDetails}></ViewHospital> : ''}
+            {isviewOpen ? <ViewSuperAdmin isOpen={isviewOpen} onClose={() => { setIsviewOpen(false) }} data={viewDetails}></ViewSuperAdmin> : ''}
+            {addOpen ? <AddSuperAdmin isOpen={addOpen} onClose={() => { setAddOpen(false) }} id={hospitalId} setFetchAgain={setFetchAgain} ></AddSuperAdmin> : ''}
+            {isEditOpen ? <EditSuperAdmin isOpen={isEditOpen} setSuperAdmins={setSuperadmins} onClose={() => { setIsEditOpen(false) }} id={editsuperAdminId}></EditSuperAdmin> : ''}
+            {ispasswordOpen?<ResetPassword id={passwordid} onClose={() => { setIsPassswordOpen(false) }} isOpen={ispasswordOpen}></ResetPassword>:''}
         </>
     )
 }

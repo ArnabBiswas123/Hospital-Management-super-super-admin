@@ -1,18 +1,36 @@
 import { useNavigate } from "react-router-dom";
-
-export default function BranchTable({hospitalid}: {hospitalid?: string}) {
+import { useState } from "react";
+export default function BranchTable({ hospitalId }: { hospitalId: string }) {
     const navigate= useNavigate();
-    const fetchBranch= async()=>{
-        try {
-            const token = localStorage.getItem("token");
-            if (!token) {
-                navigate("/");
-                return;
-            }
-        } catch (error) {
-             console.error("Error:", error);
-        }
-    }
+       const [loading, setLoading] = useState(true);
+    // const fetchBranch= async()=>{
+    //     try {
+    //         const token = localStorage.getItem("token");
+    //         if (!token) {
+    //             navigate("/");
+    //             return;
+    //         }
+    //          setLoading(true);
+    //                     const response: Response = await fetch(
+    //                         `${import.meta.env.VITE_BACKEND_URL}api/v1/superadmin/getallsuperadminbyhospital/${hospitalId}`,
+    //                         {
+    //                             headers: {
+    //                                 Authorization: `Bearer ${token}`,
+    //                             },
+    //                         }
+    //                     );
+    //                     setLoading(false);
+    //                     const data: { success: boolean; data?: superAdmin[]; msg?: string } = await response.json();
+    //                     if (data.success) {
+    //                         setSuperadmins(data.data || []);
+    //                     } else {
+    //                         localStorage.removeItem("token");
+    //                         navigate("/");
+    //                     }
+    //     } catch (error) {
+    //          console.error("Error:", error);
+    //     }
+    // }
     return (
         <div>BranchTable</div>
     )
